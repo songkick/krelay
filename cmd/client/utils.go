@@ -10,9 +10,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/knight42/krelay/pkg/constants"
+	"github.com/knight42/krelay/pkg/xnet"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -20,9 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
-
-	"github.com/knight42/krelay/pkg/constants"
-	"github.com/knight42/krelay/pkg/xnet"
 )
 
 func toPtr[T any](v T) *T {
@@ -30,6 +30,9 @@ func toPtr[T any](v T) *T {
 }
 
 func ensureServerPod(ctx context.Context, cs kubernetes.Interface, svrImg, namespace string) (string, error) {
+	limitCPU := "10m"
+	limitMemory := "10Mi"
+
 	pod, err := cs.CoreV1().Pods(namespace).Create(ctx, &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:    namespace,
@@ -45,6 +48,12 @@ func ensureServerPod(ctx context.Context, cs kubernetes.Interface, svrImg, names
 					Image:           svrImg,
 					Args:            []string{"-v=4"},
 					ImagePullPolicy: corev1.PullAlways,
+					Resources: corev1.ResourceRequirements{
+						Limits: corev1.ResourceList{
+							corev1.ResourceCPU:    resource.MustParse(limitCPU),
+							corev1.ResourceMemory: resource.MustParse(limitMemory),
+						},
+					},
 				},
 			},
 		},
