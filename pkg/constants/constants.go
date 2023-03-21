@@ -25,6 +25,6 @@ const (
 	ProtocolUDP = "udp"
 )
 
-const ServerImage = "ghcr.io/knight42/krelay-server:v0.0.1"
+const ServerImage = "eu.gcr.io/soundbadger-staging/krelay:0.0.1"
 
 var ClientVersion = "unknown"
